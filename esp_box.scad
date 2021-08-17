@@ -7,6 +7,7 @@ bottom_lip = 1;
 
 m3_heatset_depth = 4.5;
 m3_heatset_dia = 4;
+heatset_sides = 5;
 
 m3_button_head_depth = 2;
 m3_button_head_dia = 6;
@@ -23,18 +24,31 @@ function xy_z(a, z) = [a.x, a.y, z];
 
 smidge = 0.01;
 
-module mockup() {
+module esp_box_mockup_cutaway(body_size, body_round_radius, wall_thicknesses) {
+  intersection() {
+    esp_box_mockup(body_size, body_round_radius, wall_thicknesses);
+    translate([0, 0, -10])
+      cube([body_size.x/2, 100, 100]);
+  }
+  %translate([0, 0, -bottom_wall_thickness])
+    cube(body_size);
+}
+
+module esp_box_mockup(body_size, body_round_radius, wall_thicknesses) {
+  wall_thickness = wall_thicknesses[0];
+  top_wall_thickness = wall_thicknesses[1];
+  bottom_wall_thickness = wall_thicknesses[2];
   //intersection() { union() {
   translate([0, wall_thickness, board_lift])
     translate(center_x(body_size, d1_mini_board))
       d1_mini_mockup();
 
-  esp_box_top();
+  color("green")
+  translate([0, 0, -bottom_lip])
+  esp_box_top(body_size, body_round_radius, wall_thicknesses);
+  color("red")
   translate([0, 0, -bottom_wall_thickness])
-    esp_box_bottom();
-
-
-  //  } cube([body_size.x/2, 100, 100]); }
+    esp_box_bottom(body_size, body_round_radius, wall_thicknesses);
 }
 
 module top_cutouts(size) {
@@ -62,7 +76,7 @@ module esp_box_bottom(body_size, body_round_radius, wall_thicknesses) {
           mirror([0, flip_y, 0])
             mirror([flip_x, 0, 0])
               translate(xy(body_size)/2)
-                translate([-body_round_radius, -body_round_radius, -smidge]) {
+                translate([-heatset_sides, -heatset_sides, -smidge]) {
                   cylinder(d=m3_button_head_dia, h=m3_button_head_depth);
                   cylinder(d=m3_screw_dia, h=6);
                 }
@@ -129,10 +143,10 @@ module esp_box_top(body_size, body_round_radius, wall_thicknesses) {
   wall_thickness = wall_thicknesses[0];
   top_wall_thickness = wall_thicknesses[1];
   bottom_wall_thickness = wall_thicknesses[2];
-  inner_body = body_size - [wall_thickness, wall_thickness, top_wall_thickness];
+  inner_body = body_size - [wall_thickness, wall_thickness, top_wall_thickness + bottom_wall_thickness - bottom_lip];
 
   difference() {
-    rounded_cube(body_size + [0, 0, bottom_lip], body_round_radius);
+    rounded_cube(body_size - [0, 0, bottom_wall_thickness - bottom_lip], body_round_radius);
 
     usb_cord_cutout = [12, wall_thickness * 2, 10];
     translate([0, -smidge, 0])
@@ -155,8 +169,8 @@ module esp_box_top(body_size, body_round_radius, wall_thicknesses) {
               mirror([flip_x, 0, 0])
                 translate(xy(body_size)/2)
                   rotate([-25, 0, -45])
-                    translate([0, -body_round_radius - 1, -8])
-                      cylinder(r=body_round_radius, h=30);
+                    translate([0, -heatset_sides - 1, -8])
+                      cylinder(r=heatset_sides, h=30);
     }
 
     translate(xy(body_size)/2)
@@ -165,7 +179,7 @@ module esp_box_top(body_size, body_round_radius, wall_thicknesses) {
           mirror([0, flip_y, 0])
             mirror([flip_x, 0, 0])
               translate(xy(body_size)/2)
-                translate([-body_round_radius, -body_round_radius, -smidge])
+                translate([-heatset_sides, -heatset_sides, -smidge])
                   cylinder(d=m3_heatset_dia, h=m3_heatset_depth);
 
       translate([0, 0, smidge * 2])
