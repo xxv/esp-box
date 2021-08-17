@@ -13,6 +13,8 @@ m3_button_head_depth = 2;
 m3_button_head_dia = 6;
 m3_screw_dia = 3.3;
 
+usb_cord_cutout = [12, 10];
+
 d1_mini_board = [26, 35, 1.1];
 board_lift = 4;
 
@@ -45,14 +47,10 @@ module esp_box_mockup(body_size, body_round_radius, wall_thicknesses) {
 
   color("green")
   translate([0, 0, -bottom_lip])
-  esp_box_top(body_size, body_round_radius, wall_thicknesses);
+  esp_box_top_upright(body_size, body_round_radius, wall_thicknesses);
   color("red")
   translate([0, 0, -bottom_wall_thickness])
     esp_box_bottom(body_size, body_round_radius, wall_thicknesses);
-}
-
-module top_cutouts(size) {
-
 }
 
 module esp_box_bottom(body_size, body_round_radius, wall_thicknesses) {
@@ -140,6 +138,12 @@ module d1_mini_mockup() {
 }
 
 module esp_box_top(body_size, body_round_radius, wall_thicknesses) {
+  translate([body_size.x, 0, body_size.z - wall_thicknesses[1]])
+  rotate([0, 180, 0])
+  esp_box_top_upright(body_size, body_round_radius, wall_thicknesses);
+}
+
+module esp_box_top_upright(body_size, body_round_radius, wall_thicknesses) {
   wall_thickness = wall_thicknesses[0];
   top_wall_thickness = wall_thicknesses[1];
   bottom_wall_thickness = wall_thicknesses[2];
@@ -148,10 +152,10 @@ module esp_box_top(body_size, body_round_radius, wall_thicknesses) {
   difference() {
     rounded_cube(body_size - [0, 0, bottom_wall_thickness - bottom_lip], body_round_radius);
 
-    usb_cord_cutout = [12, wall_thickness * 2, 10];
-    translate([0, -smidge, 0])
-    translate(center_x(body_size, usb_cord_cutout))
-      cube(usb_cord_cutout);
+    usb_cord_cutout_3d = [usb_cord_cutout.x, wall_thickness * 2, usb_cord_cutout.y + smidge];
+    translate([0, -smidge, -smidge])
+    translate(center_x(body_size, usb_cord_cutout_3d))
+      cube(usb_cord_cutout_3d);
 
     translate([0, 0, -smidge])
       translate(center_xy(body_size, inner_body))
@@ -181,9 +185,6 @@ module esp_box_top(body_size, body_round_radius, wall_thicknesses) {
               translate(xy(body_size)/2)
                 translate([-heatset_sides, -heatset_sides, -smidge])
                   cylinder(d=m3_heatset_dia, h=m3_heatset_depth);
-
-      translate([0, 0, smidge * 2])
-        top_cutouts(body_size);
   }
 }
 
