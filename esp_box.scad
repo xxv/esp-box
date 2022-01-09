@@ -137,13 +137,13 @@ module d1_mini_mockup() {
         cube(wifi);
 }
 
-module esp_box_top(body_size, body_round_radius, wall_thicknesses) {
+module esp_box_top(body_size, body_round_radius, wall_thicknesses, top_holes=false) {
   translate([body_size.x, 0, body_size.z - wall_thicknesses[1]])
   rotate([0, 180, 0])
-  esp_box_top_upright(body_size, body_round_radius, wall_thicknesses);
+  esp_box_top_upright(body_size, body_round_radius, wall_thicknesses, top_holes=top_holes);
 }
 
-module esp_box_top_upright(body_size, body_round_radius, wall_thicknesses) {
+module esp_box_top_upright(body_size, body_round_radius, wall_thicknesses, top_holes=false) {
   wall_thickness = wall_thicknesses[0];
   top_wall_thickness = wall_thicknesses[1];
   bottom_wall_thickness = wall_thicknesses[2];
@@ -166,25 +166,49 @@ module esp_box_top_upright(body_size, body_round_radius, wall_thicknesses) {
         translate(center_xy(body_size, inner_body))
           rounded_cube(inner_body + [0, 0, bottom_lip + smidge], body_round_radius - wall_thickness/2);
 
+      if (top_holes) {
+        translate(xy(body_size)/2)
+          for (flip_y = [0, 1])
+            for (flip_x = [0, 1])
+              mirror([0, flip_y, 0])
+                mirror([flip_x, 0, 0])
+                  translate(xy(body_size)/2)
+                    translate([-heatset_sides/2 - wall_thicknesses.x,
+                               -heatset_sides/2 - wall_thicknesses.x,
+                               0])
+                      cylinder(r=heatset_sides, h=30);
+      } else {
+        translate(xy(body_size)/2)
+          for (flip_y = [0, 1])
+            for (flip_x = [0, 1])
+              mirror([0, flip_y, 0])
+                mirror([flip_x, 0, 0])
+                  translate(xy(body_size)/2)
+                    rotate([-25, 0, -45])
+                      translate([0, -heatset_sides - 1, -8])
+                        cylinder(r=heatset_sides, h=30);
+      }
+    }
+
+    if (top_holes) {
       translate(xy(body_size)/2)
         for (flip_y = [0, 1])
           for (flip_x = [0, 1])
             mirror([0, flip_y, 0])
               mirror([flip_x, 0, 0])
                 translate(xy(body_size)/2)
-                  rotate([-25, 0, -45])
-                    translate([0, -heatset_sides - 1, -8])
-                      cylinder(r=heatset_sides, h=30);
+                  translate([-heatset_sides, -heatset_sides, -smidge])
+                    cylinder(d=m3_heatset_dia, h=body_size.z);
+    } else {
+      translate(xy(body_size)/2)
+        for (flip_y = [0, 1])
+          for (flip_x = [0, 1])
+            mirror([0, flip_y, 0])
+              mirror([flip_x, 0, 0])
+                translate(xy(body_size)/2)
+                  translate([-heatset_sides, -heatset_sides, -smidge])
+                    cylinder(d=m3_heatset_dia, h=m3_heatset_depth);
     }
-
-    translate(xy(body_size)/2)
-      for (flip_y = [0, 1])
-        for (flip_x = [0, 1])
-          mirror([0, flip_y, 0])
-            mirror([flip_x, 0, 0])
-              translate(xy(body_size)/2)
-                translate([-heatset_sides, -heatset_sides, -smidge])
-                  cylinder(d=m3_heatset_dia, h=m3_heatset_depth);
   }
 }
 
